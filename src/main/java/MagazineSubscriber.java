@@ -1,5 +1,7 @@
 import java.util.concurrent.Flow;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
 
 public class MagazineSubscriber implements Flow.Subscriber<Integer>  {
 
@@ -9,8 +11,9 @@ public class MagazineSubscriber implements Flow.Subscriber<Integer>  {
     private final String subscriberName;
     private Flow.Subscription subscription;
     private int ultimoItem = 0;
-    private int revistasPerdidas = 0;
-    private int count = 0;
+
+    private List<Integer> revistasPerdidas = new ArrayList<Integer>();
+    private List<Integer> revistasRecebidas = new ArrayList<Integer>();
 
     /**
      * Construtor.
@@ -49,14 +52,18 @@ public class MagazineSubscriber implements Flow.Subscriber<Integer>  {
      * @param item a próxima revista entregue ao assinante
      */
     public void onNext(Integer item) {
-        count++;
 
         if(item - ultimoItem > 1) {
             System.out.println("Alguma revista foi perdida pelo assinante " + subscriberName + "!");
-            revistasPerdidas++;
+
+            for (int i = ultimoItem+1 ; i < item; i++){
+                revistasPerdidas.add(i);
+            }
+
         }
 
         ultimoItem = item;
+        revistasRecebidas.add(ultimoItem);
 
         try {
             Thread.sleep(sleepTime);
@@ -82,7 +89,9 @@ public class MagazineSubscriber implements Flow.Subscriber<Integer>  {
      * Lembre-se de escrever no log a mensagem que indica quantas revistas o assinante recebeu.
      */
     public void onComplete() {
-        System.out.println("O assinante "+subscriberName+" recebeu "+(count-revistasPerdidas)+" revistas.");
+
+        int totalRevistas = revistasRecebidas.size();
+        System.out.println("O assinante "+subscriberName+" recebeu "+totalRevistas+" revistas.");
     }
 
     /**
